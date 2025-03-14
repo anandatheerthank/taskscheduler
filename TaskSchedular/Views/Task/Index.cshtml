@@ -1,0 +1,67 @@
+﻿ @model IEnumerable<TaskSchedular.Models.TaskInfo>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a id="lnkCreate" asp-action="CreateTask">Create New</a>
+</p>
+<table class="table" id="tblInfos">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TaskID)
+                Task ID
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TaskDescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ExpectedClosureDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AssignedTo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CompletionStatus)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TaskID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TaskDescription)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ExpectedClosureDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AssignedTo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CompletionStatus)
+                </td>
+                <td>
+                    <a id="lnkEdit" asp-action="EditTask" asp-route-id="@item.TaskID">Edit</a>
+                    <a id="lnkDelete" asp-action="DeleteTask" asp-route-id="@item.TaskID">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
