@@ -1,47 +1,54 @@
-using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using TaskSchedular.Data;
 using TaskSchedular.Interface;
 using TaskSchedular.Repository;
-
+ 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.--
+ 
+// Load environment variables for production deployment
+var env = builder.Environment;
+var configuration = builder.Configuration;
+ 
+// Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<TaskContext>(options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("DBConnection")
-    ));
-
-// Implement the code here to register the services.
+ 
+// Configure Database Connection with environment variable fallback
+var connectionString = configuration.GetConnectionString("DBConnection") 
+                       ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+ 
+builder.Services.AddDbContext<TaskContext>(options => options.UseSqlServer(connectionString));
+ 
+// Register services
 builder.Services.AddScoped<ITasks, TaskRepository>();
-
+ 
+// Configure CORS policies (restrict in production)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy.WithOrigins("https://your-production-url.com") // Restrict for production
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+ 
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+});
+ 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
+ 
+// Configure middleware based on environment
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.UseCors(builder =>
+ 
+// Enable Forwarded Headers for proxy support (useful for Docker, Nginx, IIS)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-});
-
-// Method override middleware
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Task}/{action=Index}/{id?}");
-
-app.Run();
-
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.X
