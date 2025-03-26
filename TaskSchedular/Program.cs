@@ -51,4 +51,21 @@ if (!app.Environment.IsDevelopment())
 // Enable Forwarded Headers for proxy support (useful for Docker, Nginx, IIS)
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.X
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+ 
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+ 
+// Use specific CORS policy
+app.UseCors("AllowSpecificOrigin");
+ 
+// Endpoint Routing
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Task}/{action=Index}/{id?}");
+ 
+// Run the app
+app.Run();
